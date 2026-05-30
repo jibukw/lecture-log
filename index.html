@@ -76,7 +76,7 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 80px}
   border-radius:var(--radius);box-shadow:var(--shadow-lg);
   z-index:400;width:300px;
   display:none;flex-direction:column;overflow:hidden;
-  max-height:440px;
+  max-height:90vh; /* JS에서 동적으로 덮어씀 */
 }
 .dp.open{display:flex}
 
@@ -157,7 +157,47 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 80px}
 .dp-confirm{background:var(--accent)!important;color:#fff!important;border-color:var(--accent)!important}
 .dp-confirm:hover{background:var(--accent-mid)!important;border-color:var(--accent-mid)!important}
 
-/* ── Modal ── */
+/* ── Calendar popup ── */
+.cal-popup{
+  position:fixed;z-index:450;
+  background:var(--surface);border:1px solid var(--border-strong);
+  border-radius:var(--radius);box-shadow:var(--shadow-lg);
+  width:280px;padding:14px;display:none;flex-direction:column;gap:10px;
+}
+.cal-popup.open{display:flex}
+.cal-head{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.cal-month-label{font-size:14px;font-weight:600;color:var(--text);flex:1;text-align:center}
+.cal-nav{width:28px;height:28px;border-radius:var(--radius-sm);border:1px solid var(--border);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-muted)}
+.cal-nav:hover{background:var(--bg)}
+.cal-nav svg{width:14px;height:14px}
+.cal-daynames{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:2px}
+.cal-dn{font-size:10px;font-weight:600;color:var(--text-faint);text-align:center;padding:4px 0}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-cell{
+  aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+  font-size:12px;border-radius:var(--radius-sm);cursor:pointer;
+  color:var(--text);transition:background .1s;border:none;background:none;
+  font-family:'DM Mono',monospace;
+}
+.cal-cell:hover{background:var(--bg)}
+.cal-cell.other-month{color:var(--text-faint)}
+.cal-cell.today{background:var(--accent-light);color:var(--accent);font-weight:700}
+.cal-cell.in-week{background:var(--accent-light)}
+.cal-cell.today.in-week{background:var(--accent);color:#fff}
+.cal-cell.has-record::after{content:'';display:block;width:4px;height:4px;border-radius:50%;background:var(--accent);position:absolute;bottom:3px;left:50%;transform:translateX(-50%)}
+.cal-cell{position:relative}
+.cal-foot{display:flex;justify-content:center}
+.cal-today-btn{font-family:inherit;font-size:12px;font-weight:500;padding:5px 16px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);cursor:pointer;color:var(--text-muted)}
+.cal-today-btn:hover{background:var(--bg);color:var(--text)}
+.week-title-btn{
+  background:none;border:none;cursor:pointer;font-family:'DM Mono',monospace;
+  font-size:18px;font-weight:600;color:var(--text);letter-spacing:-.03em;
+  padding:3px 8px;border-radius:var(--radius-sm);transition:background .15s;
+  display:flex;align-items:center;gap:5px;
+}
+.week-title-btn:hover{background:var(--border)}
+.week-title-btn svg{width:13px;height:13px;color:var(--text-muted);flex-shrink:0}
+
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:500;padding:20px}
 .modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);width:100%;max-width:520px;max-height:90vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);overflow:hidden}
 .modal-head{padding:16px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
@@ -179,12 +219,31 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 80px}
 .cs-cnt{font-size:11px;color:var(--text-muted);font-weight:400}
 .cs-del{background:none;border:none;cursor:pointer;color:var(--text-faint);font-size:16px;padding:2px 4px}
 .cs-del:hover{color:#E24B4A}
-.cs-arrow{font-size:10px;color:var(--text-faint);transition:transform .2s}
-.course-section-head.open .cs-arrow{transform:rotate(180deg)}
-.ep-list-modal{display:none;padding:6px 10px;max-height:180px;overflow-y:auto}
+.cs-edit{background:none;border:none;cursor:pointer;color:var(--text-faint);font-size:12px;padding:2px 6px;border-radius:var(--radius-sm);font-family:inherit}
+.cs-edit:hover{background:var(--border);color:var(--text)}
+.ep-list-modal{display:none;border-top:1px solid var(--border)}
 .ep-list-modal.open{display:block}
-.ep-row-m{display:flex;gap:8px;padding:4px 8px;font-size:11px;color:var(--text-muted);line-height:1.4}
-.ep-row-m .ep-n{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-faint);flex-shrink:0;min-width:20px;margin-top:1px}
+.ep-list-inner{padding:6px 10px;max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
+.ep-row-m{display:flex;align-items:flex-start;gap:6px;padding:4px 6px;border-radius:var(--radius-sm);group}
+.ep-row-m:hover{background:var(--bg)}
+.ep-n{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-faint);flex-shrink:0;min-width:22px;margin-top:3px}
+.ep-text{flex:1;font-size:12px;color:var(--text);line-height:1.5;word-break:break-all}
+.ep-text-input{flex:1;font-size:12px;font-family:inherit;padding:2px 6px;border:1px solid var(--accent-mid);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);outline:none;line-height:1.5}
+.ep-actions{display:flex;gap:2px;flex-shrink:0;opacity:0;transition:opacity .15s}
+.ep-row-m:hover .ep-actions{opacity:1}
+.ep-act-btn{background:none;border:none;cursor:pointer;width:22px;height:22px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:var(--text-faint);font-size:13px}
+.ep-act-btn:hover{background:var(--border);color:var(--text)}
+.ep-act-btn.del:hover{color:#E24B4A}
+.ep-add-row{display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--border)}
+.ep-add-row input{flex:1;font-size:12px;font-family:inherit;padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);outline:none}
+.ep-add-row input:focus{border-color:var(--accent-mid)}
+.ep-add-row button{padding:5px 10px;font-family:inherit;font-size:12px;font-weight:500;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--accent);background:var(--accent);color:#fff;white-space:nowrap}
+.ep-add-row button:hover{background:var(--accent-mid)}
+.ep-drag{cursor:grab;color:var(--text-faint);font-size:13px;padding:0 2px;flex-shrink:0;user-select:none;margin-top:2px}
+.ep-drag:active{cursor:grabbing}
+.ep-row-m.dragging{opacity:.4;background:var(--accent-light)}
+.ep-row-m.drag-over{border-top:2px solid var(--accent)}
+.course-section-head.open .cs-arrow{transform:rotate(180deg)}
 .add-form{border:1px solid var(--border);border-radius:var(--radius);padding:14px;display:flex;flex-direction:column;gap:10px}
 .add-form label{font-size:12px;font-weight:500;color:var(--text-muted)}
 .add-form input,.add-form textarea{width:100%;padding:7px 10px;font-size:12px;font-family:inherit;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);outline:none;resize:vertical;margin-top:4px}
@@ -229,7 +288,10 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 80px}
     <div class="week-info">
       <button class="nav-btn" onclick="changeWeek(-1)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 3L5 8l5 5"/></svg></button>
       <div>
-        <div class="week-title" id="weekTitle"></div>
+        <button class="week-title-btn" id="weekTitle" onclick="toggleCal(event)">
+          <span id="weekTitleText"></span>
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M5 1v3M11 1v3M2 7h12"/></svg>
+        </button>
         <div class="week-range" id="weekRange"></div>
       </div>
       <button class="nav-btn" onclick="changeWeek(1)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3l5 5-5 5"/></svg></button>
@@ -285,6 +347,23 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 80px}
     </div>
   </div>
 </div>
+<!-- Calendar popup -->
+<div class="cal-popup" id="calPopup">
+  <div class="cal-head">
+    <button class="cal-nav" onclick="calChangeMonth(-1)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 3L5 8l5 5"/></svg></button>
+    <span class="cal-month-label" id="calMonthLabel"></span>
+    <button class="cal-nav" onclick="calChangeMonth(1)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3l5 5-5 5"/></svg></button>
+  </div>
+  <div class="cal-daynames">
+    <div class="cal-dn">월</div><div class="cal-dn">화</div><div class="cal-dn">수</div>
+    <div class="cal-dn">목</div><div class="cal-dn">금</div><div class="cal-dn">토</div><div class="cal-dn">일</div>
+  </div>
+  <div class="cal-grid" id="calGrid"></div>
+  <div class="cal-foot">
+    <button class="cal-today-btn" onclick="calGoToday()">오늘</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <div class="tip" id="tip"></div>
 
@@ -327,7 +406,7 @@ function fs(d){return `${d.getMonth()+1}/${d.getDate()}`;}
 // ── Render week ──
 function render(){
   const dates=weekDates(),todayKey=dk(new Date());
-  document.getElementById('weekTitle').textContent=`${dates[0].getFullYear()}년 ${dates[0].getMonth()+1}월`;
+  document.getElementById('weekTitleText').textContent=`${dates[0].getFullYear()}년 ${dates[0].getMonth()+1}월`;
   document.getElementById('weekRange').textContent=`${fs(dates[0])} – ${fs(dates[6])}`;
   renderSummary(dates);
   const grid=document.getElementById('grid');grid.innerHTML='';
@@ -390,16 +469,43 @@ function openDp(key,e){
   dpKey=key; dpSel={};
   (records[key]||[]).forEach(r=>{dpSel[`${r.cid}_${r.ei}`]=true;});
 
-  // position dropdown near the button
   const aw=document.getElementById('aw-'+key);
   const rect=aw.getBoundingClientRect();
   const dp=document.getElementById('globalDp');
-  dp.style.left=Math.min(rect.left,window.innerWidth-310)+'px';
-  const spaceBelow=window.innerHeight-rect.bottom;
-  if(spaceBelow<250){
-    dp.style.top=''; dp.style.bottom=(window.innerHeight-rect.top+4)+'px';
+  const margin=8; // 화면 끝에서 최소 여백
+
+  // 좌우 위치
+  let left=rect.left;
+  if(left+310>window.innerWidth-margin) left=window.innerWidth-310-margin;
+  if(left<margin) left=margin;
+  dp.style.left=left+'px';
+
+  // 위/아래 공간 계산
+  const spaceBelow=window.innerHeight-rect.bottom-margin;
+  const spaceAbove=rect.top-margin;
+  const minHeight=200; // 최소 이 높이는 확보
+
+  if(spaceBelow>=minHeight){
+    // 아래로 펼침 — 남은 공간만큼만 사용
+    dp.style.top=(rect.bottom+4)+'px';
+    dp.style.bottom='';
+    dp.style.maxHeight=spaceBelow+'px';
+  } else if(spaceAbove>=minHeight){
+    // 위로 펼침 — 남은 공간만큼만 사용
+    dp.style.bottom=(window.innerHeight-rect.top+4)+'px';
+    dp.style.top='';
+    dp.style.maxHeight=spaceAbove+'px';
   } else {
-    dp.style.bottom=''; dp.style.top=(rect.bottom+4)+'px';
+    // 공간이 양쪽 다 부족하면 더 넓은 쪽으로
+    if(spaceBelow>=spaceAbove){
+      dp.style.top=(rect.bottom+4)+'px';
+      dp.style.bottom='';
+      dp.style.maxHeight=spaceBelow+'px';
+    } else {
+      dp.style.bottom=(window.innerHeight-rect.top+4)+'px';
+      dp.style.top='';
+      dp.style.maxHeight=spaceAbove+'px';
+    }
   }
 
   document.getElementById('dpSearchInput').value='';
@@ -512,9 +618,16 @@ function removeRec(key,cid,ei){
 }
 
 document.addEventListener('click',e=>{
-  if(!dpKey)return;
-  const dp=document.getElementById('globalDp');
-  if(!dp.contains(e.target))closeDp();
+  if(dpKey){
+    const dp=document.getElementById('globalDp');
+    const aw=document.getElementById('aw-'+dpKey);
+    if(!dp.contains(e.target)&&(!aw||!aw.contains(e.target)))closeDp();
+  }
+  if(calOpen){
+    const popup=document.getElementById('calPopup');
+    const btn=document.getElementById('weekTitle');
+    if(!popup.contains(e.target)&&!btn.contains(e.target))closeCal();
+  }
 });
 
 function changeWeek(d){weekOff+=d;render();}
@@ -538,17 +651,118 @@ function renderTabList(){
   courses.forEach(c=>{
     const col=PAL[c.ci%PAL.length];
     const sec=document.createElement('div');sec.className='course-section';
-    const epHtml=c.episodes.map((ep,i)=>`<div class="ep-row-m"><span class="ep-n">${i+1}</span><span>${ep}</span></div>`).join('');
-    sec.innerHTML=`
-      <div class="course-section-head" onclick="toggleCS(this)">
-        <button class="cs-dot" style="background:${col.dot}" onclick="event.stopPropagation();cycleColor(${c.id})" title="색상 변경"></button>
-        <span class="cs-name">${c.name}</span>
-        <span class="cs-cnt">${c.episodes.length}강</span>
-        <button class="cs-del" onclick="event.stopPropagation();delCourse(${c.id})" title="삭제">×</button>
-        <span class="cs-arrow">▾</span>
-      </div>
-      <div class="ep-list-modal">${epHtml}</div>`;
+
+    // ── 헤더 ──
+    const head=document.createElement('div');
+    head.className='course-section-head';
+    head.innerHTML=`
+      <button class="cs-dot" style="background:${col.dot}" onclick="event.stopPropagation();cycleColor(${c.id})" title="색상 변경"></button>
+      <span class="cs-name" id="csname-${c.id}">${c.name}</span>
+      <span class="cs-cnt" id="cscnt-${c.id}">${c.episodes.length}강</span>
+      <button class="cs-edit" onclick="event.stopPropagation();editCourseName(${c.id})" title="이름 수정">✏️</button>
+      <button class="cs-del" onclick="event.stopPropagation();delCourse(${c.id})" title="삭제">×</button>
+      <span class="cs-arrow">▾</span>`;
+    head.onclick=()=>toggleCS(head);
+
+    // ── 에피소드 영역 ──
+    const epWrap=document.createElement('div');
+    epWrap.className='ep-list-modal';
+    epWrap.id=`epwrap-${c.id}`;
+
+    const epInner=document.createElement('div');
+    epInner.className='ep-list-inner';
+    epInner.id=`epinner-${c.id}`;
+    renderEpList(c,epInner);
+
+    // ── 에피소드 추가 행 ──
+    const addRow=document.createElement('div');
+    addRow.className='ep-add-row';
+    addRow.innerHTML=`
+      <input type="text" id="epinput-${c.id}" placeholder="새 에피소드 이름">
+      <button type="button" onclick="addEpisode(${c.id})">+ 추가</button>`;
+
+    epWrap.appendChild(epInner);
+    epWrap.appendChild(addRow);
+    sec.appendChild(head);
+    sec.appendChild(epWrap);
     el.appendChild(sec);
+
+    // 엔터키 등록 - 버튼 submit 방지용 flag로 중복 실행 차단
+    const epInp=addRow.querySelector('input');
+    epInp.addEventListener('keydown',e=>{
+      if(e.key==='Enter'){
+        e.preventDefault();
+        e.stopPropagation();
+        addEpisode(c.id);
+      }
+    });
+  });
+}
+
+function renderEpList(c,container){
+  container.innerHTML='';
+  c.episodes.forEach((ep,i)=>{
+    const row=document.createElement('div');
+    row.className='ep-row-m';
+    row.id=`eprow-${c.id}-${i}`;
+    row.draggable=true;
+    row.innerHTML=`
+      <span class="ep-drag" title="드래그해서 순서 변경">⠿</span>
+      <span class="ep-n">${i+1}</span>
+      <span class="ep-text" id="eptext-${c.id}-${i}">${ep}</span>
+      <div class="ep-actions">
+        <button class="ep-act-btn" onclick="editEpisode(${c.id},${i})" title="수정">✏️</button>
+        <button class="ep-act-btn del" onclick="delEpisode(${c.id},${i})" title="삭제">×</button>
+      </div>`;
+    attachDrag(row,c,i,container);
+    container.appendChild(row);
+  });
+}
+
+let dragSrcCid=null,dragSrcEi=null;
+
+function attachDrag(row,c,ei,container){
+  row.addEventListener('dragstart',e=>{
+    dragSrcCid=c.id; dragSrcEi=ei;
+    row.classList.add('dragging');
+    e.dataTransfer.effectAllowed='move';
+  });
+  row.addEventListener('dragend',()=>{
+    container.querySelectorAll('.ep-row-m').forEach(r=>{
+      r.classList.remove('dragging','drag-over');
+    });
+  });
+  row.addEventListener('dragover',e=>{
+    e.preventDefault();
+    e.dataTransfer.dropEffect='move';
+    container.querySelectorAll('.drag-over').forEach(r=>r.classList.remove('drag-over'));
+    if(dragSrcCid===c.id&&dragSrcEi!==ei) row.classList.add('drag-over');
+  });
+  row.addEventListener('dragleave',()=>row.classList.remove('drag-over'));
+  row.addEventListener('drop',e=>{
+    e.preventDefault();
+    if(dragSrcCid!==c.id||dragSrcEi===ei)return;
+    // 순서 변경
+    const course=courses.find(x=>x.id===c.id);
+    if(!course)return;
+    const moved=course.episodes.splice(dragSrcEi,1)[0];
+    const toEi=ei>dragSrcEi?ei:ei;
+    course.episodes.splice(toEi,0,moved);
+    // records 인덱스도 재정렬
+    const from=dragSrcEi,to=toEi;
+    Object.keys(records).forEach(k=>{
+      records[k]=(records[k]||[]).map(r=>{
+        if(r.cid!==c.id)return r;
+        if(r.ei===from)return{...r,ei:to};
+        if(from<to&&r.ei>from&&r.ei<=to)return{...r,ei:r.ei-1};
+        if(from>to&&r.ei>=to&&r.ei<from)return{...r,ei:r.ei+1};
+        return r;
+      });
+    });
+    save();
+    renderEpList(course,container);
+    document.getElementById('cscnt-'+c.id).textContent=`${course.episodes.length}강`;
+    render();
   });
 }
 
@@ -561,12 +775,103 @@ function cycleColor(id){
   const c=courses.find(x=>x.id===id);if(!c)return;
   c.ci=(c.ci+1)%PAL.length;save();renderTabList();render();
 }
+
+function editCourseName(id){
+  const c=courses.find(x=>x.id===id);if(!c)return;
+  const nameEl=document.getElementById('csname-'+id);
+  if(nameEl.querySelector('input'))return; // 이미 편집 중
+  const cur=c.name;
+  nameEl.innerHTML=`<input class="cs-name-input" id="csnameInput-${id}" value="${cur}" onclick="event.stopPropagation()">`;
+  const inp=document.getElementById('csnameInput-'+id);
+  inp.focus();inp.select();
+  const save2=()=>{
+    const val=inp.value.trim();
+    if(val&&val!==cur){
+      if(courses.find(x=>x.name===val&&x.id!==id)){toast('이미 있는 이름이에요');return;}
+      c.name=val;save();render();toast('이름 수정 완료');
+    }
+    nameEl.textContent=c.name;
+  };
+  inp.onblur=save2;
+  inp.onkeydown=e=>{if(e.key==='Enter')inp.blur();if(e.key==='Escape'){nameEl.textContent=cur;}};
+}
+
 function delCourse(id){
   const c=courses.find(x=>x.id===id);
-  if(!confirm(`"${c?.name}" 삭제할까요?`))return;
+  if(!confirm(`"${c?.name}" 강의를 삭제할까요?\n수강 기록도 모두 삭제됩니다.`))return;
   courses=courses.filter(x=>x.id!==id);
   Object.keys(records).forEach(k=>{records[k]=(records[k]||[]).filter(r=>r.cid!==id);});
   save();renderTabList();render();
+}
+
+let _addingEp=false;
+function addEpisode(cid){
+  if(_addingEp)return;
+  _addingEp=true;
+  setTimeout(()=>_addingEp=false,300);
+  const c=courses.find(x=>x.id===cid);if(!c)return;
+  const inp=document.getElementById('epinput-'+cid);
+  const val=inp.value.trim();
+  if(!val){toast('에피소드 이름을 입력해주세요');return;}
+  c.episodes.push(val);
+  save();
+  const container=document.getElementById('epinner-'+cid);
+  renderEpList(c,container);
+  document.getElementById('cscnt-'+cid).textContent=`${c.episodes.length}강`;
+  render();
+  toast('에피소드 추가 완료');
+  // renderEpList 이후에 값 초기화 + 포커스 (DOM 재렌더 후 실행)
+  setTimeout(()=>{
+    const inp2=document.getElementById('epinput-'+cid);
+    if(inp2){inp2.value='';inp2.focus();}
+  },0);
+}
+
+function delEpisode(cid,ei){
+  const c=courses.find(x=>x.id===cid);if(!c)return;
+  if(!confirm(`"${c.episodes[ei]}" 삭제할까요?`))return;
+  // 기록에서도 제거 (인덱스 재정렬)
+  Object.keys(records).forEach(k=>{
+    records[k]=(records[k]||[])
+      .filter(r=>!(r.cid===cid&&r.ei===ei))
+      .map(r=>r.cid===cid&&r.ei>ei?{...r,ei:r.ei-1}:r);
+  });
+  c.episodes.splice(ei,1);
+  save();
+  const container=document.getElementById('epinner-'+cid);
+  renderEpList(c,container);
+  document.getElementById('cscnt-'+cid).textContent=`${c.episodes.length}강`;
+  render();
+  toast('삭제 완료');
+}
+
+function editEpisode(cid,ei){
+  const c=courses.find(x=>x.id===cid);if(!c)return;
+  const textEl=document.getElementById(`eptext-${cid}-${ei}`);
+  if(!textEl)return;
+  if(textEl.tagName==='INPUT')return;
+  const cur=c.episodes[ei];
+  const inp=document.createElement('input');
+  inp.className='ep-text-input';
+  inp.value=cur;
+  textEl.replaceWith(inp);
+  inp.focus();inp.select();
+  const done=()=>{
+    const val=inp.value.trim()||cur;
+    c.episodes[ei]=val;
+    save();render();
+    const span=document.createElement('span');
+    span.className='ep-text';
+    span.id=`eptext-${cid}-${ei}`;
+    span.textContent=val;
+    inp.replaceWith(span);
+    if(val!==cur)toast('수정 완료');
+  };
+  inp.onblur=done;
+  inp.onkeydown=e=>{
+    if(e.key==='Enter')inp.blur();
+    if(e.key==='Escape'){inp.value=cur;inp.blur();}
+  };
 }
 
 function initCP(){
@@ -593,6 +898,121 @@ function addCourse(){
   toast(`"${name}" 추가 완료 (${eps.length}강)`);
 }
 
+// ── Calendar ──
+let calYear=new Date().getFullYear();
+let calMonth=new Date().getMonth();
+let calOpen=false;
+
+function toggleCal(e){
+  e.stopPropagation();
+  const popup=document.getElementById('calPopup');
+  if(calOpen){closeCal();return;}
+  // 현재 보고 있는 주의 월로 캘린더 초기화
+  const dates=weekDates();
+  calYear=dates[0].getFullYear();
+  calMonth=dates[0].getMonth();
+  buildCal();
+  // 위치 설정
+  const btn=document.getElementById('weekTitle');
+  const rect=btn.getBoundingClientRect();
+  popup.style.left=Math.min(rect.left,window.innerWidth-296)+'px';
+  const spaceBelow=window.innerHeight-rect.bottom;
+  if(spaceBelow>=320){
+    popup.style.top=(rect.bottom+6)+'px';
+    popup.style.bottom='';
+  } else {
+    popup.style.bottom=(window.innerHeight-rect.top+6)+'px';
+    popup.style.top='';
+  }
+  popup.classList.add('open');
+  calOpen=true;
+}
+
+function closeCal(){
+  document.getElementById('calPopup').classList.remove('open');
+  calOpen=false;
+}
+
+function calChangeMonth(d){
+  calMonth+=d;
+  if(calMonth>11){calMonth=0;calYear++;}
+  if(calMonth<0){calMonth=11;calYear--;}
+  buildCal();
+}
+
+function calGoToday(){
+  weekOff=0;
+  const today=new Date();
+  calYear=today.getFullYear();
+  calMonth=today.getMonth();
+  buildCal();
+  render();
+  closeCal();
+}
+
+function buildCal(){
+  document.getElementById('calMonthLabel').textContent=`${calYear}년 ${calMonth+1}월`;
+  const grid=document.getElementById('calGrid');
+  grid.innerHTML='';
+
+  const todayKey=dk(new Date());
+  const weekDays=weekDates().map(d=>dk(d));
+
+  // 이번 달 1일의 요일 (월요일=0 기준)
+  const firstDay=new Date(calYear,calMonth,1);
+  let startDow=firstDay.getDay()-1; // 0=월
+  if(startDow<0)startDow=6; // 일요일이면 6
+
+  const lastDate=new Date(calYear,calMonth+1,0).getDate();
+  const prevLastDate=new Date(calYear,calMonth,0).getDate();
+
+  // 이전 달 날짜들
+  for(let i=startDow-1;i>=0;i--){
+    const d=new Date(calYear,calMonth-1,prevLastDate-i);
+    grid.appendChild(makeCalCell(d,true,todayKey,weekDays));
+  }
+  // 이번 달
+  for(let i=1;i<=lastDate;i++){
+    const d=new Date(calYear,calMonth,i);
+    grid.appendChild(makeCalCell(d,false,todayKey,weekDays));
+  }
+  // 다음 달 날짜들 (6주 채우기)
+  const total=startDow+lastDate;
+  const remainder=total%7===0?0:7-(total%7);
+  for(let i=1;i<=remainder;i++){
+    const d=new Date(calYear,calMonth+1,i);
+    grid.appendChild(makeCalCell(d,true,todayKey,weekDays));
+  }
+}
+
+function makeCalCell(d,otherMonth,todayKey,weekDays){
+  const key=dk(d);
+  const btn=document.createElement('button');
+  btn.className='cal-cell';
+  if(otherMonth)btn.classList.add('other-month');
+  if(key===todayKey)btn.classList.add('today');
+  if(weekDays.includes(key))btn.classList.add('in-week');
+  if(records[key]&&records[key].length>0)btn.classList.add('has-record');
+  btn.textContent=d.getDate();
+  btn.onclick=()=>calSelectDate(d);
+  return btn;
+}
+
+function calSelectDate(d){
+  // 선택한 날짜가 포함된 주로 이동
+  const mon=getMonday(new Date());
+  const selMon=getMonday(d);
+  weekOff=Math.round((selMon-mon)/(7*24*60*60*1000));
+  render();
+  // 캘린더 갱신 (in-week 표시 업데이트)
+  const weekDays=weekDates().map(x=>dk(x));
+  calYear=d.getFullYear();
+  calMonth=d.getMonth();
+  buildCal();
+  closeCal();
+}
+
+// ── Toast ──
 let tt;
 function toast(msg){
   const el=document.getElementById('toast');
