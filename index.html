@@ -60,50 +60,23 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 40px;min-height:calc(100vh
 }
 
 /* 태블릿 / 폴드 펼침 (가로 800px 이상, 세로가 긴 경우) */
-/* ── 반응형 레이아웃 ── */
+/* ── 반응형 레이아웃 — JS가 grid-cols 클래스 동적 적용 ── */
+.grid.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grid.cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.grid.cols-7{grid-template-columns:repeat(7,minmax(0,1fr))}
 
-/* PC / 넓은 태블릿 (1024px↑) → 7열 */
-@media(min-width:1024px){
-  .grid{grid-template-columns:repeat(7,minmax(0,1fr))}
-}
-
-/* 태블릿 세로 / 폴드 펼침 세로 (600px~1023px) → 4열 */
-@media(min-width:600px) and (max-width:1023px){
-  .grid{grid-template-columns:repeat(4,minmax(0,1fr))}
-}
-
-/* 폴드 펼침 가로 모드 (460px~700px, 세로 400px~700px) → 4열 */
-@media(min-width:460px) and (max-width:700px) and (orientation:landscape) and (min-height:400px){
-  .grid{grid-template-columns:repeat(4,minmax(0,1fr))}
-  main{padding:12px 16px 20px}
-  .week-nav{margin-bottom:10px}
-}
-
-/* 중간 폰 / 폴드 접힘 세로 (461px~599px) → 4열 */
-@media(max-width:599px) and (min-width:461px) and (orientation:portrait){
-  .grid{grid-template-columns:repeat(4,minmax(0,1fr))}
-}
-
-/* 일반 스마트폰 세로 (460px↓) → 2열 */
-@media(max-width:460px) and (orientation:portrait){
-  .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-}
-
-/* 일반 스마트폰 가로 (높이 500px↓) → 7열 */
-@media(orientation:landscape) and (max-height:430px){
-  main{padding:8px 12px 10px}
-  .week-nav{margin-bottom:6px}
-  .summary{margin-bottom:6px}
-  .grid{grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
-  .day-card{padding:6px 4px;gap:3px}
-  .day-num{font-size:13px!important}
-  .tag{padding:2px 4px;font-size:9px}
-  .add-btn{padding:3px 4px;font-size:9px}
-}
+/* 가로 모드 소형 폰 UI 축소 */
+.landscape-small main{padding:8px 12px 10px}
+.landscape-small .week-nav{margin-bottom:6px}
+.landscape-small .summary{margin-bottom:6px}
+.landscape-small .grid{gap:4px}
+.landscape-small .day-card{padding:6px 4px;gap:3px}
+.landscape-small .day-num{font-size:13px!important}
+.landscape-small .tag{padding:2px 4px;font-size:9px}
+.landscape-small .add-btn{padding:3px 4px;font-size:9px}
 
 /* 아주 작은 폰 */
 @media(max-width:360px){
-  .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .day-card{padding:8px 6px}
 }
 .day-card.today{border-color:var(--today-border);background:var(--today-bg);border-width:1.5px}
@@ -461,6 +434,7 @@ function render(){
   document.getElementById('weekTitleText').textContent=`${dates[0].getFullYear()}년 ${dates[0].getMonth()+1}월`;
   document.getElementById('weekRange').textContent=`${fs(dates[0])} – ${fs(dates[6])}`;
   renderSummary(dates);
+  applyGridLayout();
   const grid=document.getElementById('grid');grid.innerHTML='';
   dates.forEach((d,i)=>{
     const key=dk(d),isToday=key===todayKey;
@@ -684,6 +658,44 @@ document.addEventListener('click',e=>{
 
 function changeWeek(d){weekOff+=d;render();}
 function goToday(){weekOff=0;render();}
+
+// ── 반응형 그리드 (JS로 실제 픽셀 기반 적용) ──
+function applyGridLayout(){
+  const w=window.innerWidth;
+  const h=window.innerHeight;
+  const isLandscape=w>h;
+  const grid=document.getElementById('grid');
+  const body=document.body;
+  if(!grid)return;
+
+  // 기존 클래스 초기화
+  grid.classList.remove('cols-2','cols-4','cols-7');
+  body.classList.remove('landscape-small');
+
+  if(w>=1024){
+    // PC / 넓은 태블릿
+    grid.classList.add('cols-7');
+  } else if(isLandscape && h<500){
+    // 일반 폰 가로 (세로 500px 미만) → 7열 + UI 축소
+    grid.classList.add('cols-7');
+    body.classList.add('landscape-small');
+  } else if(isLandscape && w>=460){
+    // 폴드 펼침 가로 / 태블릿 가로 → 4열
+    grid.classList.add('cols-4');
+  } else if(!isLandscape && w>=600){
+    // 폴드 펼침 세로 / 태블릿 세로 → 4열
+    grid.classList.add('cols-4');
+  } else if(!isLandscape && w>=380){
+    // 폴드 접힘 / 중간 폰 세로 → 4열
+    grid.classList.add('cols-4');
+  } else {
+    // 작은 폰 세로 → 2열
+    grid.classList.add('cols-2');
+  }
+}
+
+window.addEventListener('resize', applyGridLayout);
+window.addEventListener('orientationchange', ()=>setTimeout(applyGridLayout, 100));
 
 // ── Modal ──
 let newCiVal=1;
