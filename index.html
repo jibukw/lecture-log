@@ -128,12 +128,14 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 40px;min-height:calc(100vh
 }
 .dp.open{display:flex}
 .dp-resize-handle{
-  width:100%;padding:6px 0 4px;
+  width:100%;padding:8px 0 6px;
   display:flex;align-items:center;justify-content:center;
-  cursor:ns-resize;flex-shrink:0;
+  cursor:grab;flex-shrink:0;
   background:var(--surface);
   touch-action:none;
+  transition:background .15s;
 }
+.dp-resize-handle:active{cursor:grabbing}
 .dp-resize-bar{
   width:36px;height:4px;border-radius:999px;
   background:var(--border-strong);
@@ -778,50 +780,78 @@ function applyGridLayout(){
   }
 }
 
-// ── 드롭다운 높이 조절 (드래그 핸들) ──
+// ── 드롭다운 높이 조절 + 위치 이동 (드래그 핸들) ──
 const dpEl=document.getElementById('globalDp');
 const dpHandle=document.getElementById('dpResizeHandle');
 let dpResizing=false,dpResizeStartY=0,dpResizeStartH=0;
+let dpDragging=false,dpDragOX=0,dpDragOY=0;
+let dpLongPressTimer=null;
 
+// 터치: 꾹 누르면 이동, 짧게 누르면 리사이즈
 dpHandle.addEventListener('touchstart',e=>{
-  dpResizing=true;
-  dpResizeStartY=e.touches[0].clientY;
+  const t=e.touches[0];
+  dpResizeStartY=t.clientY;
   dpResizeStartH=dpEl.offsetHeight;
+  dpDragOX=t.clientX-dpEl.getBoundingClientRect().left;
+  dpDragOY=t.clientY-dpEl.getBoundingClientRect().top;
+  // 300ms 이상 누르면 이동 모드
+  dpLongPressTimer=setTimeout(()=>{
+    dpDragging=true;
+    dpHandle.style.background='var(--accent-light)';
+  },300);
   e.preventDefault();
 },{passive:false});
 
 document.addEventListener('touchmove',e=>{
-  if(!dpResizing)return;
-  const dy=dpResizeStartY-e.touches[0].clientY; // 위로 드래그 = 높이 증가
-  const newH=Math.min(
-    Math.max(150, dpResizeStartH+dy),
-    window.innerHeight*0.9
-  );
-  dpEl.style.maxHeight=newH+'px';
-  dpEl.style.height=newH+'px';
-  e.preventDefault();
+  if(dpDragging){
+    const t=e.touches[0];
+    let x=t.clientX-dpDragOX;
+    let y=t.clientY-dpDragOY;
+    x=Math.max(0,Math.min(x,window.innerWidth-dpEl.offsetWidth));
+    y=Math.max(0,Math.min(y,window.innerHeight-dpEl.offsetHeight));
+    dpEl.style.left=x+'px';
+    dpEl.style.top=y+'px';
+    dpEl.style.bottom='';
+    e.preventDefault();
+  } else if(!dpDragging&&dpResizeStartH>0){
+    clearTimeout(dpLongPressTimer);
+    const dy=dpResizeStartY-e.touches[0].clientY;
+    const newH=Math.min(Math.max(150,dpResizeStartH+dy),window.innerHeight*0.9);
+    dpEl.style.maxHeight=newH+'px';
+    dpEl.style.height=newH+'px';
+    e.preventDefault();
+  }
 },{passive:false});
 
-document.addEventListener('touchend',()=>{dpResizing=false;});
+document.addEventListener('touchend',()=>{
+  clearTimeout(dpLongPressTimer);
+  dpDragging=false;
+  dpResizeStartH=0;
+  dpHandle.style.background='';
+});
 
-// 마우스용
+// 마우스: 드래그로 이동
 dpHandle.addEventListener('mousedown',e=>{
-  dpResizing=true;
-  dpResizeStartY=e.clientY;
-  dpResizeStartH=dpEl.offsetHeight;
+  dpDragging=true;
+  dpDragOX=e.clientX-dpEl.getBoundingClientRect().left;
+  dpDragOY=e.clientY-dpEl.getBoundingClientRect().top;
+  dpHandle.style.cursor='grabbing';
   e.preventDefault();
 });
 document.addEventListener('mousemove',e=>{
-  if(!dpResizing)return;
-  const dy=dpResizeStartY-e.clientY;
-  const newH=Math.min(
-    Math.max(150,dpResizeStartH+dy),
-    window.innerHeight*0.9
-  );
-  dpEl.style.maxHeight=newH+'px';
-  dpEl.style.height=newH+'px';
+  if(!dpDragging)return;
+  let x=e.clientX-dpDragOX;
+  let y=e.clientY-dpDragOY;
+  x=Math.max(0,Math.min(x,window.innerWidth-dpEl.offsetWidth));
+  y=Math.max(0,Math.min(y,window.innerHeight-dpEl.offsetHeight));
+  dpEl.style.left=x+'px';
+  dpEl.style.top=y+'px';
+  dpEl.style.bottom='';
 });
-document.addEventListener('mouseup',()=>{dpResizing=false;});
+document.addEventListener('mouseup',()=>{
+  dpDragging=false;
+  dpHandle.style.cursor='';
+});
 
 window.addEventListener('resize', applyGridLayout);
 window.addEventListener('orientationchange', ()=>setTimeout(applyGridLayout, 100));
