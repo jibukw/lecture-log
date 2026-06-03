@@ -127,6 +127,17 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 40px;min-height:calc(100vh
   max-height:90vh;
 }
 .dp.open{display:flex}
+.dp-resize-handle{
+  width:100%;padding:6px 0 4px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:ns-resize;flex-shrink:0;
+  background:var(--surface);
+  touch-action:none;
+}
+.dp-resize-bar{
+  width:36px;height:4px;border-radius:999px;
+  background:var(--border-strong);
+}
 
 /* search bar at top */
 .dp-search-bar{
@@ -371,6 +382,9 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 40px;min-height:calc(100vh
 
 <!-- single shared dropdown -->
 <div class="dp" id="globalDp">
+  <div class="dp-resize-handle" id="dpResizeHandle">
+    <div class="dp-resize-bar"></div>
+  </div>
   <div class="dp-search-bar">
     <input type="text" id="dpSearchInput" placeholder="에피소드 검색..." oninput="onDpSearch(this.value)">
     <button class="dp-search-clear" id="dpSearchClear" onclick="clearDpSearch()">×</button>
@@ -602,6 +616,7 @@ function openDp(key,e){
 
   document.getElementById('dpSearchInput').value='';
   document.getElementById('dpSearchClear').classList.remove('show');
+  dpEl.style.height='';
   buildDpContent('');
   dp.classList.add('open');
 }
@@ -762,6 +777,51 @@ function applyGridLayout(){
     grid.classList.add('cols-2');
   }
 }
+
+// ── 드롭다운 높이 조절 (드래그 핸들) ──
+const dpEl=document.getElementById('globalDp');
+const dpHandle=document.getElementById('dpResizeHandle');
+let dpResizing=false,dpResizeStartY=0,dpResizeStartH=0;
+
+dpHandle.addEventListener('touchstart',e=>{
+  dpResizing=true;
+  dpResizeStartY=e.touches[0].clientY;
+  dpResizeStartH=dpEl.offsetHeight;
+  e.preventDefault();
+},{passive:false});
+
+document.addEventListener('touchmove',e=>{
+  if(!dpResizing)return;
+  const dy=dpResizeStartY-e.touches[0].clientY; // 위로 드래그 = 높이 증가
+  const newH=Math.min(
+    Math.max(150, dpResizeStartH+dy),
+    window.innerHeight*0.9
+  );
+  dpEl.style.maxHeight=newH+'px';
+  dpEl.style.height=newH+'px';
+  e.preventDefault();
+},{passive:false});
+
+document.addEventListener('touchend',()=>{dpResizing=false;});
+
+// 마우스용
+dpHandle.addEventListener('mousedown',e=>{
+  dpResizing=true;
+  dpResizeStartY=e.clientY;
+  dpResizeStartH=dpEl.offsetHeight;
+  e.preventDefault();
+});
+document.addEventListener('mousemove',e=>{
+  if(!dpResizing)return;
+  const dy=dpResizeStartY-e.clientY;
+  const newH=Math.min(
+    Math.max(150,dpResizeStartH+dy),
+    window.innerHeight*0.9
+  );
+  dpEl.style.maxHeight=newH+'px';
+  dpEl.style.height=newH+'px';
+});
+document.addEventListener('mouseup',()=>{dpResizing=false;});
 
 window.addEventListener('resize', applyGridLayout);
 window.addEventListener('orientationchange', ()=>setTimeout(applyGridLayout, 100));
