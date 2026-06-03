@@ -536,9 +536,15 @@ function renderTags(key){
     tag.innerHTML=`<span class="tag-text">${ep}</span><button class="tag-del" onclick="removeRec('${key}',${r.cid},${r.ei})">×</button>`;
     tag.addEventListener('mouseenter',e=>showTip(tipText));
     tag.addEventListener('mouseleave',hideTip);
+    let lastTipText='';
     tag.addEventListener('touchstart',e=>{
       e.stopPropagation();
-      showTip(tipText);
+      if(tipVisible&&lastTipText===tipText){
+        hideTip();
+      } else {
+        lastTipText=tipText;
+        showTip(tipText);
+      }
     },{passive:true});
     el.appendChild(tag);
   });
